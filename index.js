@@ -65,3 +65,5 @@ module.exports = function (options, settings) {
         cb();
     });
 };
+
+module.exports.SimpleTemplate = SimpleTemplate;
