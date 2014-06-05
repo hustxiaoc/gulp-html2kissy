@@ -20,7 +20,7 @@ function substitute(str, o, regexp) {
     });
 }
 
-var kissy =  fs.readFileSync(path.join(__dirname,"kissy.tpl")).toString();
+var kissyTemplate =  SimpleTemplate(fs.readFileSync(path.join(__dirname,"lib/kissy.tpl")).toString());
 
 module.exports = function (options, settings) {
     settings = settings || {};
@@ -48,12 +48,16 @@ module.exports = function (options, settings) {
                 tpl: file.contents.toString()
             });
 
-            var fun = tpl.compile().toString();
+            var fun = tpl.compile().toString(),
+                code =['{',
+                    '__lines: '+ JSON.stringify(tpl.__lines),
+                    ',render:'+ fun,
+                '}'].join('\n');
 
-            file.contents = new Buffer(substitute(kissy,{
-                package: path.join(options.package,modname),
-                lines: JSON.stringify(tpl.__lines),
-                render: fun
+            file.contents = new Buffer(kissyTemplate.render({
+                package: options.package?path.join(options.package,modname):null,
+                code: "module.exports =" + code,
+                style: options.style||"code"
             }));
             file.path = gutil.replaceExtension(file.path, ".js");
         } catch (err) {
